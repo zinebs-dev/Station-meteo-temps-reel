@@ -4,6 +4,9 @@
 #include <sched.h>
 #include <unistd.h>
 #include "acquisition.h"
+#include "buffer.h"
+
+static buffer_t buf;
 
 int main(int argc, char **argv) {
     int duree = (argc > 1) ? atoi(argv[1]) : 60;
@@ -17,12 +20,17 @@ int main(int argc, char **argv) {
     pthread_attr_setschedpolicy(&attr, SCHED_FIFO);
     pthread_attr_setschedparam(&attr, &sp);
 
-    if (pthread_create(&th, &attr, acquisition_tache, NULL) != 0) {
+    buffer_init(&buf);
+
+    if (pthread_create(&th, &attr, acquisition_tache, &buf) != 0) {
         fprintf(stderr, "SCHED_FIFO refuse (lancer avec sudo), priorite normale\n");
-        pthread_create(&th, NULL, acquisition_tache, NULL);
+        pthread_create(&th, NULL, acquisition_tache, &buf);
     }
     pthread_attr_destroy(&attr);
 
     sleep(duree);
-    return 0;   /* la fin du processus arrete le thread */
+    mesure_t m; int n = 0;
+    while (buffer_pop(&buf, &m) == 0) n++;
+    printf("elements dans le buffer : %d (attendu : min(10 x duree, 63))\n", n);
+    return 0;
 }
