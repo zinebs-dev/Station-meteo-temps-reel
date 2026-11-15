@@ -54,7 +54,7 @@ int main(int argc, char **argv) {
 
     struct { const char *nom; void *(*fn)(void *); void *arg; int prio; pthread_t th; int ok; } t[] = {
         { "acquisition", acquisition_tache, &tampon, PRIO_ACQUISITION, 0, 0 },
-        { "filtrage",    filtrage_tache,    &tampon, PRIO_FILTRAGE,    0, 0 },
+        { "filtrage",    filtrage_tache,    NULL,    PRIO_FILTRAGE,    0, 0 },
         { "affichage",   affichage_tache,   NULL,    PRIO_AFFICHAGE,   0, 0 },
     };
     int n = (int)(sizeof t / sizeof t[0]);
