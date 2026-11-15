@@ -4,6 +4,7 @@
 #include "capteur.h"
 #include "temps.h"
 #include "jitter.h"
+#include "buffer.h"
 
 #ifdef ACQ_DEBUG
 #include <stdio.h>
@@ -12,7 +13,7 @@
 #define PERIODE_NS 100000000L   /* 100 ms = 10 Hz */
 
 void *acquisition_tache(void *arg) {
-    (void)arg;
+    buffer_t *buf = (buffer_t *)arg;   /* buffer partage, cree dans main.c */
 
     mesure_t m;
     struct timespec prochain, reel;
@@ -36,7 +37,8 @@ void *acquisition_tache(void *arg) {
 
         /* Travail de la tache : lecture du capteur */
         capteur_lire(&m);
-        /* TODO apres : buffer_push((buffer_t *)arg, &m); */
+        if (buf != NULL)
+            buffer_push(buf, &m);   /* plein : mesure perdue, on ne bloque JAMAIS */
 
 #ifdef ACQ_DEBUG
         n++;
