@@ -12,6 +12,7 @@
 #include "buffer.h"
 #include "donnees.h"
 #include "filtrage.h"
+#include <sys/mman.h>
 
 #define PRIO_ACQUISITION 60
 #define PRIO_FILTRAGE    50
@@ -48,6 +49,8 @@ int main(int argc, char **argv) {
     sigemptyset(&sa.sa_mask);
     sigaction(SIGINT, &sa, NULL);
     sigaction(SIGTERM, &sa, NULL);
+    if (mlockall(MCL_CURRENT | MCL_FUTURE) != 0)
+        fprintf(stderr, "mlockall : %s -> lancer avec sudo (verrouillage memoire impossible)\n",strerror(errno));
 
     donnees_init();
     buffer_init(&tampon);
