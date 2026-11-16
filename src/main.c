@@ -1,18 +1,21 @@
 #define _GNU_SOURCE
 #include <errno.h>
+#include <getopt.h>
 #include <pthread.h>
 #include <sched.h>
 #include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/mman.h>
 #include <time.h>
 #include "acquisition.h"
 #include "affichage.h"
 #include "buffer.h"
+#include "capteur.h"
 #include "donnees.h"
 #include "filtrage.h"
-#include <sys/mman.h>
+#include "jitter.h"
 
 #define PRIO_ACQUISITION 60
 #define PRIO_FILTRAGE    50
@@ -24,6 +27,16 @@ static buffer_t tampon; /* buffer partage acquisition -> filtrage */
 static void sur_signal(int sig) {
     (void)sig;
     arret = 1;
+}
+
+static void usage(const char *prog) {
+    fprintf(stderr,
+            "Usage : %s [--duree SECONDES] [--sortie fichier.csv] [--force-chaud]\n"
+            "  --duree SECONDES    arret propre apres ce delai (0 ou absent : jusqu'a Ctrl+C)\n"
+            "  --sortie fichier    fichier CSV du jitter (defaut : jitter.csv)\n"
+            "  --force-chaud       force la temperature a 45 C pour tester l'alerte\n"
+            "  --help              affiche ce message\n",
+            prog);
 }
 
 /* repere 8.2 : creation d'un thread en SCHED_FIFO */
@@ -42,22 +55,59 @@ static int creer_tache_fifo(pthread_t *th, void *(*fn)(void *), void *arg, int p
 
 int main(int argc, char **argv) {
     int duree = 0; /* 0 = jusqu'a Ctrl+C */
-    for (int i = 1; i < argc - 1; i++)
-        if (strcmp(argv[i], "--duree") == 0) duree = atoi(argv[i + 1]);
+    const char *sortie = "jitter.csv";
+    int chaud = 0;
+
+    static const struct option longopts[] = {
+        { "duree",       required_argument, NULL, 'd' },
+        { "sortie",      required_argument, NULL, 's' },
+        { "force-chaud", no_argument,       NULL, 'c' },
+        { "help",        no_argument,       NULL, 'h' },
+        { 0, 0, 0, 0 }
+    };
+
+    int opt;
+    while ((opt = getopt_long(argc, argv, "", longopts, NULL)) != -1) {
+        switch (opt) {
+        case 'd': {
+            char *fin;
+            long v = strtol(optarg, &fin, 10);
+            if (*optarg == '\0' || *fin != '\0' || v < 0) {
+                fprintf(stderr, "Erreur : --duree attend un nombre de secondes >= 0\n");
+                usage(argv[0]);
+                return 2;
+            }
+            duree = (int)v;
+            break;
+        }
+        case 's': sortie = optarg; break;
+        case 'c': chaud = 1; break;
+        case 'h': usage(argv[0]); return 0;
+        default:  usage(argv[0]); return 2;   /* option inconnue ou argument manquant */
+        }
+    }
+    if (optind < argc) {
+        fprintf(stderr, "Erreur : argument inattendu '%s'\n", argv[optind]);
+        usage(argv[0]);
+        return 2;
+    }
 
     struct sigaction sa = { .sa_handler = sur_signal };
     sigemptyset(&sa.sa_mask);
     sigaction(SIGINT, &sa, NULL);
     sigaction(SIGTERM, &sa, NULL);
     if (mlockall(MCL_CURRENT | MCL_FUTURE) != 0)
-        fprintf(stderr, "mlockall : %s -> lancer avec sudo (verrouillage memoire impossible)\n",strerror(errno));
-
+        fprintf(stderr, "mlockall : %s -> lancer avec sudo (verrouillage memoire impossible)\n",
+                strerror(errno));
+    if (chaud)
+        capteur_forcer_temperature(45.0);   /* avant de creer les taches */
+    jitter_init(sortie);                    /* avant de creer les taches */
     donnees_init();
     buffer_init(&tampon);
 
     struct { const char *nom; void *(*fn)(void *); void *arg; int prio; pthread_t th; int ok; } t[] = {
         { "acquisition", acquisition_tache, &tampon, PRIO_ACQUISITION, 0, 0 },
-        { "filtrage",    filtrage_tache,    NULL,    PRIO_FILTRAGE,    0, 0 },
+        { "filtrage",    filtrage_tache,    NULL, PRIO_FILTRAGE,    0, 0 },
         { "affichage",   affichage_tache,   NULL,    PRIO_AFFICHAGE,   0, 0 },
     };
     int n = (int)(sizeof t / sizeof t[0]);
@@ -89,5 +139,7 @@ int main(int argc, char **argv) {
     for (int i = 0; i < n; i++)
         if (t[i].ok) pthread_join(t[i].th, NULL);
 
+    jitter_fermer();   /* APRES les join : plus aucune tache n'enregistre, on ecrit le CSV */
+    
     return erreur ? EXIT_FAILURE : EXIT_SUCCESS;
 }
