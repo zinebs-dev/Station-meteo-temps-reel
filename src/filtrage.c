@@ -1,65 +1,77 @@
-/* src/filtrage.c */
 #define _POSIX_C_SOURCE 200809L
- 
+
 #include <errno.h>
 #include <stdatomic.h>
 #include <stddef.h>
 #include <time.h>
- 
+
+#include "buffer.h"
+#include "donnees.h"
 #include "filtrage.h"
 #include "jitter.h"
+#include "mesure.h"
+#include "moyenne.h"
 #include "temps.h"
- 
+
 #ifdef FILTRAGE_DEBUG
 #include <stdio.h>
 #endif
  
 #define PERIODE_NS 200000000L /* 200 ms = 5 Hz */
  
-/* Derniere valeur traitee (volatile : evite que le compilateur supprime le calcul). */
-static volatile double derniere_sortie;
 
-static double valeur_provisoire(unsigned long n)
+static buffer_t *tampon_entree = NULL;
+
+void filtrage_brancher(buffer_t *b)
 {
-    static unsigned long etat = 12345UL;
-    double bruit;
- 
-    etat = etat * 1103515245UL + 12345UL;
-    bruit = ((double)((etat >> 16) & 0x7FFFUL) / 32767.0 - 0.5) * 0.4; 
-    return 20.0 + (double)(n % 100UL) * 0.1 + bruit;
+    tampon_entree = b;
 }
 
-/* Traitement de la valeur */
-static double traiter(double x)
-{
-    return x;
-}
+
 
 void *filtrage_tache(void *arg)
 {
     atomic_int *arret = (atomic_int *)arg; /* NULL = ne s'arrete jamais */
     struct timespec prochain, reel;
-    unsigned long n = 0;
+    moyenne_t fenetre;
+    mesure_t brute, filtree;
     int r;
- 
+
+    moyenne_init(&fenetre);
+
     clock_gettime(CLOCK_MONOTONIC, &prochain);
- 
+
     while (arret == NULL || atomic_load(arret) == 0) {
-        /* Prochain reveil = reveil precedent + 200 ms 
+        /* Prochain reveil = reveil precedent + 200 ms :
          * les retards ne s'accumulent pas. */
         ajouter_ns(&prochain, PERIODE_NS);
         do {
             r = clock_nanosleep(CLOCK_MONOTONIC, TIMER_ABSTIME, &prochain, NULL);
         } while (r == EINTR); /* interrompu par un signal : on se rendort jusqu'a l'heure prevue */
- 
+
         clock_gettime(CLOCK_MONOTONIC, &reel); /* heure reelle du reveil */
         jitter_enregistrer("filtrage", &prochain, &reel);
- 
-        derniere_sortie = traiter(valeur_provisoire(n));
+
+        /* 1. Vider le buffer. buffer_pop() ne bloque jamais : -1 si vide.
+         *    La boucle est bornee a BUFFER_TAILLE lectures : duree maximale connue. */
+        unsigned nouvelles = 0;
+        if (tampon_entree != NULL) {
+            for (unsigned i = 0; i < BUFFER_TAILLE; i++) {
+                if (buffer_pop(tampon_entree, &brute) != 0)
+                    break;
+                moyenne_ajouter(&fenetre, &brute);
+                nouvelles++;
+            }
+        }
+
+        /* 2. Publier seulement s'il y a du nouveau. Buffer vide : on ne fait rien,
+         *    donnees garde la derniere valeur publiee. */
+        if (nouvelles > 0 && moyenne_calculer(&fenetre, &filtree) == 0) {
+            donnees_ecrire(&filtree);
 #ifdef FILTRAGE_DEBUG
-        printf("filtrage #%lu : %.2f\n", n, derniere_sortie);
+            printf("filtrage : %u nouvelle(s), T filtree = %.2f\n", nouvelles, filtree.temperature);
 #endif
-        n++;
+        }
     }
     return NULL;
 }
