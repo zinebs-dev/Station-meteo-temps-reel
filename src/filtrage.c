@@ -12,6 +12,7 @@
 #include "mesure.h"
 #include "moyenne.h"
 #include "temps.h"
+#include "alerte.h"
 
 #ifdef FILTRAGE_DEBUG
 #include <stdio.h>
@@ -36,6 +37,7 @@ void *filtrage_tache(void *arg)
     moyenne_t fenetre;
     mesure_t brute, filtree;
     int r;
+    int en_alerte = 0; 
 
     moyenne_init(&fenetre);
 
@@ -68,6 +70,14 @@ void *filtrage_tache(void *arg)
          *    donnees garde la derniere valeur publiee. */
         if (nouvelles > 0 && moyenne_calculer(&fenetre, &filtree) == 0) {
             donnees_ecrire(&filtree);
+            if (filtree.temperature > ALERTE_SEUIL_C) {
+                if (!en_alerte) {
+                    alerte_declencher(filtree.temperature);
+                    en_alerte = 1;
+                }
+            } else {
+                en_alerte = 0; /* retour sous le seuil : l'alerte est rearmee */
+            }
 #ifdef FILTRAGE_DEBUG
             printf("filtrage : %u nouvelle(s), T filtree = %.2f\n", nouvelles, filtree.temperature);
 #endif
