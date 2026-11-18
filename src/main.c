@@ -9,6 +9,8 @@
 #include <string.h>
 #include <sys/mman.h>
 #include <time.h>
+
+#include "alerte.h"
 #include "acquisition.h"
 #include "affichage.h"
 #include "buffer.h"
@@ -16,10 +18,12 @@
 #include "donnees.h"
 #include "filtrage.h"
 #include "jitter.h"
+#include "journal.h"
 
 #define PRIO_ACQUISITION 60
 #define PRIO_FILTRAGE    50
 #define PRIO_AFFICHAGE   40
+#define PRIO_ALERTE 30
 
 static volatile sig_atomic_t arret = 0;
 static buffer_t tampon; /* buffer partage acquisition -> filtrage */
@@ -101,7 +105,8 @@ int main(int argc, char **argv) {
                 strerror(errno));
     if (chaud)
         capteur_forcer_temperature(45.0);   /* avant de creer les taches */
-    jitter_init(sortie);                    /* avant de creer les taches */
+    jitter_init(sortie); /* avant de creer les taches */
+    journal_init("journal.log");  /* avant de creer les taches */                 
     donnees_init();
     buffer_init(&tampon);
     filtrage_brancher(&tampon);
@@ -110,6 +115,7 @@ int main(int argc, char **argv) {
         { "acquisition", acquisition_tache, &tampon, PRIO_ACQUISITION, 0, 0 },
         { "filtrage",    filtrage_tache,    NULL, PRIO_FILTRAGE,    0, 0 },
         { "affichage",   affichage_tache,   NULL,    PRIO_AFFICHAGE,   0, 0 },
+        { "alerte",      alerte_tache,      NULL,    PRIO_ALERTE,      0, 0 },
     };
     int n = (int)(sizeof t / sizeof t[0]);
     int erreur = 0;
@@ -141,6 +147,6 @@ int main(int argc, char **argv) {
         if (t[i].ok) pthread_join(t[i].th, NULL);
 
     jitter_fermer();   /* APRES les join : plus aucune tache n'enregistre, on ecrit le CSV */
-    
+    journal_arreter();
     return erreur ? EXIT_FAILURE : EXIT_SUCCESS;
 }
