@@ -25,14 +25,21 @@ if [ "$d" -ge 5 ] && [ "$d" -le 7 ]; then echo "OK        --duree 5 dure ${d} s"
 else echo "ECHEC     --duree 5 a dure ${d} s"; ECHECS=$((ECHECS + 1)); fi
 
 ./station >/dev/null 2>&1;             verifier "sans sudo -> code 1 (EPERM)"          1 $?
-rm -f /tmp/essai_options.csv
+
+sudo rm -f /tmp/essai_options.csv
 sudo ./station --duree 2 --sortie /tmp/essai_options.csv >/dev/null 2>&1
 if [ -s /tmp/essai_options.csv ]; then echo "OK        --sortie cree /tmp/essai_options.csv"
-else echo "EN ATTENTE --sortie : le CSV sera ecrit quand jitter (#30, C) sera livre"; fi
+else echo "ECHEC     --sortie : CSV absent ou vide"; ECHECS=$((ECHECS + 1)); fi
 
 sudo ./station --duree 2 --force-chaud >/dev/null 2>&1
 verifier "--force-chaud : le programme tourne et s'arrete (code 0)" 0 $?
-echo "EN ATTENTE --force-chaud -> alerte : a valider quand filtrage + alerte (B) seront livres"
+
+out=$(sudo ./station --duree 10 --force-chaud 2>&1)
+if echo "$out" | grep -q "ALERTE"; then
+    echo "OK        --force-chaud -> alerte"
+else
+    echo "ECHEC     --force-chaud -> alerte"; ECHECS=$((ECHECS + 1))
+fi
 
 echo; [ "$ECHECS" -eq 0 ] && echo "Aucun echec." || echo "$ECHECS echec(s)."
 exit $ECHECS
