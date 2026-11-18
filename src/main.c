@@ -104,7 +104,8 @@ int main(int argc, char **argv) {
     jitter_init(sortie);                    /* avant de creer les taches */
     donnees_init();
     buffer_init(&tampon);
-
+    filtrage_brancher(&tampon);
+    
     struct { const char *nom; void *(*fn)(void *); void *arg; int prio; pthread_t th; int ok; } t[] = {
         { "acquisition", acquisition_tache, &tampon, PRIO_ACQUISITION, 0, 0 },
         { "filtrage",    filtrage_tache,    NULL, PRIO_FILTRAGE,    0, 0 },
