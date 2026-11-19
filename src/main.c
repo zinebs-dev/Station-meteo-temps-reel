@@ -39,6 +39,7 @@ static void usage(const char *prog) {
             "  --duree SECONDES    arret propre apres ce delai (0 ou absent : jusqu'a Ctrl+C)\n"
             "  --sortie fichier    fichier CSV du jitter (defaut : jitter.csv)\n"
             "  --force-chaud       force la temperature a 45 C pour tester l'alerte\n"
+            "  --meteo fichier     fichier CSV meteo (defaut : mesures/meteo.csv)\n"
             "  --help              affiche ce message\n",
             prog);
 }
@@ -61,11 +62,13 @@ int main(int argc, char **argv) {
     int duree = 0; /* 0 = jusqu'a Ctrl+C */
     const char *sortie = "jitter.csv";
     int chaud = 0;
+    const char *meteo = "mesures/meteo.csv";
 
     static const struct option longopts[] = {
         { "duree",       required_argument, NULL, 'd' },
         { "sortie",      required_argument, NULL, 's' },
         { "force-chaud", no_argument,       NULL, 'c' },
+        { "meteo",       required_argument, NULL, 'm' },
         { "help",        no_argument,       NULL, 'h' },
         { 0, 0, 0, 0 }
     };
@@ -85,6 +88,7 @@ int main(int argc, char **argv) {
             break;
         }
         case 's': sortie = optarg; break;
+        case 'm': meteo = optarg; break;
         case 'c': chaud = 1; break;
         case 'h': usage(argv[0]); return 0;
         default:  usage(argv[0]); return 2;   /* option inconnue ou argument manquant */
@@ -106,7 +110,8 @@ int main(int argc, char **argv) {
     if (chaud)
         capteur_forcer_temperature(45.0);   /* avant de creer les taches */
     jitter_init(sortie); /* avant de creer les taches */
-    journal_init("journal.log");  /* avant de creer les taches */                 
+    journal_init("journal.log");  /* avant de creer les taches */  
+    affichage_enregistrer_meteo(meteo);               
     donnees_init();
     buffer_init(&tampon);
     filtrage_brancher(&tampon);
@@ -147,6 +152,7 @@ int main(int argc, char **argv) {
         if (t[i].ok) pthread_join(t[i].th, NULL);
 
     jitter_fermer();   /* APRES les join : plus aucune tache n'enregistre, on ecrit le CSV */
+    affichage_fermer_meteo();
     journal_arreter();
     return erreur ? EXIT_FAILURE : EXIT_SUCCESS;
 }
