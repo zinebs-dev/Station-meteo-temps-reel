@@ -1,7 +1,11 @@
 #!/bin/bash
-# Usage : ./scripts/lancer.sh nom_de_la_config
+# Usage : ./scripts/lancer.sh [nom_de_la_config] [duree_en_secondes]
 set -e
 NOM=${1:-normale}
+DUREE=${2:-1800}
 make
 mkdir -p mesures
-sudo ./station --duree 1800 --sortie mesures/jitter_${NOM}_$(date +%Y%m%d_%H%M).csv
+HORO=$(date +%Y%m%d_%H%M)
+sudo ./station --duree "$DUREE" \
+     --sortie "mesures/jitter_${NOM}_${HORO}.csv" \
+     --meteo  "mesures/meteo_${NOM}_${HORO}.csv"

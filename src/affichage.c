@@ -9,12 +9,32 @@
 
 #define PERIODE_NS 1000000000L /* 1000 ms */
 
+static FILE *meteo = NULL;
+
+void affichage_enregistrer_meteo(const char *fichier) {
+    meteo = fopen(fichier, "w");
+    if (!meteo) {
+        perror("affichage : ouverture du fichier meteo");
+        return;
+    }
+    fprintf(meteo, "temps_s,temperature,humidite\n");
+    fflush(meteo);
+}
+
+void affichage_fermer_meteo(void) {
+    if (meteo) {
+        fclose(meteo);
+        meteo = NULL;
+    }
+}
+
 void *affichage_tache(void *arg) {
     (void)arg;
-    struct timespec prochain, reel, now;
+    struct timespec prochain, reel, now, debut;
     mesure_t m;
 
-    clock_gettime(CLOCK_MONOTONIC, &prochain);
+    clock_gettime(CLOCK_MONOTONIC, &debut);
+    prochain = debut;
     for (;;) {
         ajouter_ns(&prochain, PERIODE_NS);
         clock_nanosleep(CLOCK_MONOTONIC, TIMER_ABSTIME, &prochain, NULL);
@@ -29,6 +49,13 @@ void *affichage_tache(void *arg) {
                tm.tm_hour, tm.tm_min, tm.tm_sec, now.tv_nsec / 1000000L,
                m.temperature, m.humidite, m.pression);
         fflush(stdout);
+
+        if (meteo) {
+            fprintf(meteo, "%.1f,%.2f,%.2f\n",
+                    (double)diff_us(&debut, &reel) / 1e6,
+                    m.temperature, m.humidite);
+            fflush(meteo);
+        }
     }
     return NULL;
 }

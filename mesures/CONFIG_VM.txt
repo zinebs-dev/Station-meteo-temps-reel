@@ -1,0 +1,28 @@
+CONFIGURATION DE MESURE
+
+Hote
+- Processeur : Intel(R) Core(TM) Ultra 7 155H
+- Coeurs : 16 (threads logiques : 22)
+- RAM : 15,5 Go
+- Systeme : Windows
+
+VirtualBox
+- Version : 7.2.6 (r172322)
+
+Machine virtuelle
+- Systeme : Ubuntu Server 24.04.5 LTS
+- Noyau (uname -r) : 6.8.0-149-generic
+- Processeur vu par la VM : Intel(R) Core(TM) Ultra 7 155H
+- Coeurs virtuels (nproc) : 4
+- RAM : 4,7 Gio (environ 4800 Mo)
+- Reseau : NAT, redirection 127.0.0.1:2222 -> 22
+
+Conditions de mesure
+- PC branche sur secteur, plan d'alimentation « Performances elevees »
+- Autres applications fermees, antivirus sans analyse pendant la mesure
+- Une seule VM allumee, VS Code ferme pendant la mesure (lancement par SSH)
+- 3 repetitions par configuration, percentiles P50 / P99 / P99.9 / max
+
+Limite connue
+- Le jitter varie beaucoup d'un run a l'autre dans la VM (P99 de 5 a 250 ms
+  avec la meme configuration). Les comparaisons relatives restent fiables.
