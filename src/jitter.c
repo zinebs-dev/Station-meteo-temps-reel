@@ -6,7 +6,7 @@
 #include "jitter.h"
 #include "temps.h"
 
-#define JITTER_CAPACITE 20000   /* 60 s : ~960 mesures ; 30 min : ~17 300 */
+#define JITTER_CAPACITE 40000   /* 30 min : ~28 800 mesures, marge incluse */
 #define JITTER_NOM_TAILLE 16
 
 typedef struct {
