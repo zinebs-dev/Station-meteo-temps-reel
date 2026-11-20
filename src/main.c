@@ -19,6 +19,7 @@
 #include "filtrage.h"
 #include "jitter.h"
 #include "journal.h"
+#include "temps.h"
 
 #define PRIO_ACQUISITION 60
 #define PRIO_FILTRAGE    50
@@ -139,10 +140,20 @@ int main(int argc, char **argv) {
 
     if (!erreur) {
         struct timespec pas = { 0, 100000000L }; /* 100 ms */
-        int ticks = 0;
-        while (!arret && (duree == 0 || ticks < duree * 10)) {
-            nanosleep(&pas, NULL);
-            ticks++;
+        struct timespec fin, maintenant;
+
+        /* Heure de fin ABSOLUE, calculee une seule fois : les retards de nanosleep
+         * ne s'additionnent plus (meme principe que TIMER_ABSTIME dans les taches). */
+        clock_gettime(CLOCK_MONOTONIC, &fin);
+        ajouter_ns(&fin, (long)duree * 1000000000L);
+
+        while (!arret) {
+            if (duree != 0) {
+                clock_gettime(CLOCK_MONOTONIC, &maintenant);
+                if (diff_us(&maintenant, &fin) <= 0)   /* fin - maintenant <= 0 : c'est l'heure */
+                    break;
+            }
+            nanosleep(&pas, NULL);   /* dort ~100 ms, interrompu par Ctrl+C (arret passe a 1) */
         }
     }
 
