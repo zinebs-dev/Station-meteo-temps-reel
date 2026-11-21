@@ -1,12 +1,19 @@
 if (!exists("f")) f = "mesures/meteo.csv"
-set terminal png size 900,400
+if (!exists("out")) out = "mesures/figures/meteo"
+set terminal png size 1000,450
 set datafile separator ","
+set grid
+set key off
+set xrange [0:1850]
+set xtics 300
 set xlabel "temps (s)"
 
-set output "mesures/temperature.png"
-set ylabel "temperature (C)"
-plot f using 1:2 with lines title "temperature"
+set output out."_temperature.png"
+set title "Temperature sur 30 minutes (donnees simulees)"
+set ylabel "temperature (degres C)"
+plot f using 1:2 with lines lw 2
 
-set output "mesures/humidite.png"
+set output out."_humidite.png"
+set title "Humidite sur 30 minutes (donnees simulees)"
 set ylabel "humidite (%)"
-plot f using 1:3 with lines title "humidite"
+plot f using 1:3 with lines lw 2
