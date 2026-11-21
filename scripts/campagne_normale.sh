@@ -32,7 +32,6 @@ for i in $(seq 1 "$REP"); do
     [ "$CODE" -ne 0 ]              && echo "ATTENTION : code de retour non nul"
     grep -q "mlockall"      "$ERR" && echo "ATTENTION : mlockall a echoue (config non conforme)"
     grep -q "tableau plein" "$ERR" && echo "ATTENTION : tableau jitter plein (CSV tronque)"
-    ./scripts/meteo_depuis_affichage.sh "$AFF" "mesures/meteo_normale_rep${i}_${DEB}.csv"
     [ "$i" -lt "$REP" ] && sleep "$PAUSE"
 done
 chown -R "$PROPRIO" mesures 2>/dev/null

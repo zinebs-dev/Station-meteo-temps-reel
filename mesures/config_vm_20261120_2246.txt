@@ -1,0 +1,16 @@
+Date : Fri Nov 20 10:46:22 PM UTC 2026
+--- Systeme ---
+Description:	Ubuntu 24.04.5 LTS
+6.8.0-149-generic
+--- CPU ---
+2
+Model name:                              11th Gen Intel(R) Core(TM) i5-1135G7 @ 2.40GHz
+BIOS Model name:                           CPU @ 0.0GHz
+Hypervisor vendor:                       KVM
+--- Memoire ---
+               total        used        free      shared  buff/cache   available
+Mem:           5.8Gi       503Mi       4.2Gi       1.2Mi       1.4Gi       5.3Gi
+--- Capacite jitter ---
+9:#define JITTER_CAPACITE 40000   /* 30 min : ~28 800 mesures, marge incluse */
+--- Commit ---
+6095776 feat: scripts de campagne de reference (3 repetitions, CSV meteo, comparaison)
