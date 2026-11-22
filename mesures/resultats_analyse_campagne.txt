@@ -1,0 +1,48 @@
+== mesures/jitter_charge_r1_20261121_1818.csv
+filtrage n=3000 P50=1640.0 P99=11596063.0 P99.9=16988428.0 max=17587476.0 (us)
+acquisition n=6001 P50=3632.0 P99=12407714.0 P99.9=17791238.0 max=18389291.0 (us)
+affichage n=600 P50=1878.0 P99=6719465.0 P99.9=8721255.0 max=9721005.0 (us)
+== mesures/jitter_charge_r2_20261121_1858.csv
+acquisition n=6010 P50=273277.0 P99=1385077.0 P99.9=2188458.0 max=2586808.0 (us)
+filtrage n=3004 P50=366568.0 P99=1185495.0 P99.9=1767597.0 max=1784857.0 (us)
+affichage n=600 P50=939260.0 P99=965497.0 P99.9=972668.0 max=1942674.0 (us)
+== mesures/jitter_charge_r3_20261121_1938.csv
+acquisition n=6006 P50=525806.0 P99=1529187.0 P99.9=3285028.0 max=3883782.0 (us)
+filtrage n=3003 P50=431462.0 P99=1227172.0 P99.9=3081116.0 max=3679753.0 (us)
+affichage n=600 P50=549510.0 P99=574711.0 P99.9=605510.0 max=1604790.0 (us)
+== mesures/jitter_normale_r1_20261121_1747.csv
+acquisition n=6006 P50=12773.0 P99=252477.0 P99.9=453295.0 max=565055.0 (us)
+filtrage n=3003 P50=3770.0 P99=187453.0 P99.9=406318.0 max=547608.0 (us)
+affichage n=600 P50=3615.0 P99=59311.0 P99.9=118714.0 max=126094.0 (us)
+== mesures/jitter_normale_r2_20261121_1828.csv
+filtrage n=3000 P50=561.0 P99=10297.0 P99.9=49618.0 max=137303.0 (us)
+acquisition n=6000 P50=886.0 P99=93240.0 P99.9=171488.0 max=274421.0 (us)
+affichage n=600 P50=1171.0 P99=113424.0 P99.9=253219.0 max=279220.0 (us)
+== mesures/jitter_normale_r3_20261121_1908.csv
+acquisition n=6001 P50=773.0 P99=76859.0 P99.9=163181.0 max=232158.0 (us)
+filtrage n=3000 P50=725.0 P99=41910.0 P99.9=92771.0 max=200988.0 (us)
+affichage n=600 P50=983.0 P99=75903.0 P99.9=128768.0 max=145558.0 (us)
+== mesures/jitter_sans-fifo_r1_20261121_1757.csv
+acquisition n=6004 P50=5510.0 P99=262126.0 P99.9=595778.0 max=834026.0 (us)
+filtrage n=3002 P50=5189.0 P99=238575.0 P99.9=574566.0 max=773968.0 (us)
+affichage n=600 P50=5762.0 P99=259071.0 P99.9=537534.0 max=726228.0 (us)
+== mesures/jitter_sans-fifo_r2_20261121_1838.csv
+acquisition n=6001 P50=985.0 P99=58347.0 P99.9=98502.0 max=154501.0 (us)
+filtrage n=3000 P50=1037.0 P99=54715.0 P99.9=135015.0 max=231716.0 (us)
+affichage n=600 P50=988.0 P99=22018.0 P99.9=56120.0 max=91475.0 (us)
+== mesures/jitter_sans-fifo_r3_20261121_1918.csv
+acquisition n=6000 P50=1005.0 P99=57728.0 P99.9=132957.0 max=326116.0 (us)
+filtrage n=3000 P50=909.0 P99=81601.0 P99.9=347511.0 max=653507.0 (us)
+affichage n=600 P50=787.0 P99=59395.0 P99.9=358239.0 max=457772.0 (us)
+== mesures/jitter_sans-mlockall_r1_20261121_1807.csv
+acquisition n=6000 P50=19741.0 P99=522158.0 P99.9=841084.0 max=1018859.0 (us)
+filtrage n=3000 P50=2449.0 P99=245658.0 P99.9=627361.0 max=912460.0 (us)
+affichage n=600 P50=6671.0 P99=476160.0 P99.9=581557.0 max=588157.0 (us)
+== mesures/jitter_sans-mlockall_r2_20261121_1848.csv
+acquisition n=6000 P50=932.0 P99=81308.0 P99.9=166523.0 max=278625.0 (us)
+filtrage n=3000 P50=518.0 P99=9773.0 P99.9=23616.0 max=57619.0 (us)
+affichage n=600 P50=935.0 P99=74988.0 P99.9=145910.0 max=194184.0 (us)
+== mesures/jitter_sans-mlockall_r3_20261121_1928.csv
+acquisition n=6002 P50=3210.0 P99=141131.0 P99.9=245526.0 max=365136.0 (us)
+filtrage n=3001 P50=2683.0 P99=103366.0 P99.9=320755.0 max=594553.0 (us)
+affichage n=600 P50=2685.0 P99=42057.0 P99.9=95725.0 max=225397.0 (us)
