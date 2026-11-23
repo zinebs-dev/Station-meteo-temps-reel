@@ -1,0 +1,17 @@
+tache        rep         n    P50 ms    P99 ms  P99.9 ms    max ms
+acquisition  1       18426      0.62    133.76    273.35    358.11
+acquisition  2       18781      0.98     81.41    188.35    247.62
+acquisition  3       18805      1.04     50.94    168.48    254.93
+acquisition  rapport max/min : P50 x1.66 (<= 2)  P99 x2.63 (<= 3)  -> COHERENT
+
+affichage    1        1842      0.70    122.46    551.29    861.26
+affichage    2        1878      1.14     20.36     35.48     68.68
+affichage    3        1880      1.13     31.06    173.99    355.59
+affichage    rapport max/min : P50 x1.63 (<= 2)  P99 x6.02 (<= 3)  -> A EXAMINER
+
+filtrage     1        9213      0.55    421.85    782.90    950.23
+filtrage     2        9390      0.83    335.30    624.49   1046.54
+filtrage     3        9402      0.82    400.79    730.90   1300.32
+filtrage     rapport max/min : P50 x1.51 (<= 2)  P99 x1.26 (<= 3)  -> COHERENT
+
+Verdict : au moins une tache a examiner.

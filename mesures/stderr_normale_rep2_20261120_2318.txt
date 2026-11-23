@@ -1,0 +1,2 @@
+jitter : 30049 mesure(s) ecrites dans mesures/jitter_normale_20261120_2318.csv
+journal : 0 message(s) perdu(s)

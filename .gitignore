@@ -60,5 +60,6 @@ station
 
 # jitter.csv
 /jitter.csv
-journal.log
+/journal.log
+mesures/affichage_*.txt
 /jitter_*.png
