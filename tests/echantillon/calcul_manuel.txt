@@ -1,0 +1,8 @@
+Echantillon : 10 mesures par tache (retards en microsecondes), melangees dans le fichier.
+Acquisition triee : 100 200 300 400 500 600 700 800 15000 120000
+Filtrage triee    : 50 150 250 350 450 550 650 750 25000 250000
+Affichage triee   : 1000 2000 3000 4000 5000 6000 7000 8000 150000 1200000
+Avec 10 valeurs : P50 = 5e valeur ; P99 et P99.9 = 10e valeur (la plus grande) ; max = 10e valeur.
+Echeance = periode (100 ms, 200 ms, 1 s) : une seule mesure par tache la depasse (10 %).
+Seuil strict = periode / 10 (10 ms, 20 ms, 100 ms) : deux mesures par tache le depassent (20 %).
+Resultats attendus : voir attendu.csv (valeurs en millisecondes).
