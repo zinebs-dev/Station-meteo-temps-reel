@@ -1,4 +1,4 @@
-import csv, sys
+import csv, os ,sys
 import matplotlib
 matplotlib.use("Agg")  # pas d'ecran : on enregistre en fichier
 import matplotlib.pyplot as plt
@@ -8,6 +8,7 @@ if len(sys.argv) < 2:
     sys.exit(1)
 
 fichier = sys.argv[1]
+base = os.path.splitext(fichier)[0]   # ex : mesures/jitter_normale_r1_20261121_1030
 ecarts = {}
 with open(fichier) as f:
     for ligne in csv.DictReader(f):
@@ -26,6 +27,6 @@ for tache, v in ecarts.items():
     plt.hist(v, bins=50)
     plt.xlabel("ecart (us)")
     plt.ylabel("occurrences")
-    plt.title("Jitter - " + tache)
-    plt.savefig("jitter_%s.png" % tache)
+    plt.title("Jitter - %s (%s)" % (tache, os.path.basename(base)))
+    plt.savefig("%s_%s.png" % (base, tache))
     plt.close()

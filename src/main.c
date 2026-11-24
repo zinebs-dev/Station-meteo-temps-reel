@@ -36,27 +36,30 @@ static void sur_signal(int sig) {
 
 static void usage(const char *prog) {
     fprintf(stderr,
-            "Usage : %s [--duree SECONDES] [--sortie fichier.csv] [--force-chaud]\n"
+            "Usage : %s [--duree SECONDES] [--sortie fichier.csv] [--meteo fichier.csv]\n"
+            "          [--force-chaud] [--sans-fifo] [--sans-mlockall]\n"
             "  --duree SECONDES    arret propre apres ce delai (0 ou absent : jusqu'a Ctrl+C)\n"
             "  --sortie fichier    fichier CSV du jitter (defaut : jitter.csv)\n"
             "  --force-chaud       force la temperature a 45 C pour tester l'alerte\n"
             "  --meteo fichier     fichier CSV meteo (defaut : mesures/meteo.csv)\n"
+            "  --sans-fifo         tâches en ordonnancement normal (SCHED_OTHER), sans SCHED_FIFO\n"
+            "  --sans-mlockall     ne verrouille pas la mémoire (pas de mlockall)\n"
             "  --help              affiche ce message\n",
             prog);
 }
 
 /* repere 8.2 : creation d'un thread en SCHED_FIFO */
-static int creer_tache_fifo(pthread_t *th, void *(*fn)(void *), void *arg, int priorite) {
+static int creer_tache(pthread_t *th, void *(*fn)(void *), void *arg, int priorite ,int fifo) {
     pthread_attr_t attr;
-    struct sched_param sp = { .sched_priority = priorite };
+    struct sched_param sp = { .sched_priority = fifo ? priorite : 0 };
 
     pthread_attr_init(&attr);
     pthread_attr_setinheritsched(&attr, PTHREAD_EXPLICIT_SCHED);
-    pthread_attr_setschedpolicy(&attr, SCHED_FIFO);
+    pthread_attr_setschedpolicy(&attr,  fifo ? SCHED_FIFO : SCHED_OTHER);
     pthread_attr_setschedparam(&attr, &sp);
     int r = pthread_create(th, &attr, fn, arg);
     pthread_attr_destroy(&attr);
-    return r; /* 0 si OK ; EPERM si on oublie sudo */
+    return r; /* 0 si OK ; EPERM si FIFO sans  sudo */
 }
 
 int main(int argc, char **argv) {
@@ -64,6 +67,8 @@ int main(int argc, char **argv) {
     const char *sortie = "jitter.csv";
     int chaud = 0;
     const char *meteo = "mesures/meteo.csv";
+    int sans_fifo = 0;
+    int sans_mlockall = 0;
 
     static const struct option longopts[] = {
         { "duree",       required_argument, NULL, 'd' },
@@ -71,6 +76,8 @@ int main(int argc, char **argv) {
         { "force-chaud", no_argument,       NULL, 'c' },
         { "meteo",       required_argument, NULL, 'm' },
         { "help",        no_argument,       NULL, 'h' },
+        { "sans-fifo",     no_argument, NULL, 'f' },
+        { "sans-mlockall", no_argument, NULL, 'l' },
         { 0, 0, 0, 0 }
     };
 
@@ -92,6 +99,8 @@ int main(int argc, char **argv) {
         case 'm': meteo = optarg; break;
         case 'c': chaud = 1; break;
         case 'h': usage(argv[0]); return 0;
+        case 'f': sans_fifo = 1; break;
+        case 'l': sans_mlockall = 1; break;
         default:  usage(argv[0]); return 2;   /* option inconnue ou argument manquant */
         }
     }
@@ -101,11 +110,13 @@ int main(int argc, char **argv) {
         return 2;
     }
 
+    fprintf(stderr, "configuration : SCHED_FIFO=%s mlockall=%s\n",
+            sans_fifo ? "non" : "oui", sans_mlockall ? "non" : "oui");
     struct sigaction sa = { .sa_handler = sur_signal };
     sigemptyset(&sa.sa_mask);
     sigaction(SIGINT, &sa, NULL);
     sigaction(SIGTERM, &sa, NULL);
-    if (mlockall(MCL_CURRENT | MCL_FUTURE) != 0)
+    if (!sans_mlockall && mlockall(MCL_CURRENT | MCL_FUTURE) != 0)
         fprintf(stderr, "mlockall : %s -> lancer avec sudo (verrouillage memoire impossible)\n",
                 strerror(errno));
     if (chaud)
@@ -127,7 +138,7 @@ int main(int argc, char **argv) {
     int erreur = 0;
 
     for (int i = 0; i < n; i++) {
-        int r = creer_tache_fifo(&t[i].th, t[i].fn, t[i].arg, t[i].prio);
+        int r = creer_tache(&t[i].th, t[i].fn, t[i].arg, t[i].prio,!sans_fifo);
         if (r != 0) {
             fprintf(stderr, "Erreur : creation de la tache %s (priorite %d) : %s%s\n",
                     t[i].nom, t[i].prio, strerror(r),

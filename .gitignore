@@ -62,3 +62,4 @@ station
 /jitter.csv
 /journal.log
 mesures/affichage_*.txt
+/jitter_*.png

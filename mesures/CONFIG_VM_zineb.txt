@@ -1,0 +1,26 @@
+CONFIGURATION DE MESURE (campagne Issue #35, machine de Zineb)
+
+Machine virtuelle
+- Systeme : Ubuntu 24.04.5 LTS
+- Noyau (uname -r) : 6.8.0-149-lowlatency
+- Coeurs virtuels (nproc) : 3
+- RAM : 4927 Mo
+- Hyperviseur (systemd-detect-virt) : oracle
+Hote
+- Systeme : Windows 11 pro
+- Processeur : Intel Core i5, 1,7 GHz (modele exact non releve)
+- Coeurs : 4 (processeurs logiques : 8)
+- RAM : 8 Go
+- Version de VirtualBox :7.2.6 
+
+Conditions de mesure
+- Campagne lancee par SSH dans tmux (12 runs de 10 min, ordre entrelace)
+- Hote : VS Code ferme ; seuls l'application Claude et PowerShell etaient ouverts
+- Services OpenStack nova-compute et neutron-linuxbridge-agent arretes pendant toute la campagne (virtlockd et virtlogd actifs)
+- Alimentation : sur batterie lors de la verification (etat pendant la campagne non confirme)
+- Plan d'alimentation Windows : Utilisation normale (Equilibre)
+- Noyau lowlatency installe par Zineb (les collegues utilisent generic) : les valeurs absolues ne sont pas directement comparables avec les leurs
+
+Limite connue
+- Le jitter varie beaucoup d'un run a l'autre. La configuration "charge" (stress-ng --cpu 2 libre) semble dominee par des retards lies a l'hote et a VirtualBox (hypothese non verifiee directement) : elle ne permet pas de conclure sur SCHED_FIFO (voir mesures/RESUME_35.md, fichier a creer a l'etape suivante).
+
